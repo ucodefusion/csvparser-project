@@ -1,0 +1,43 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Deploy to Server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SiGiRi_SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SiGiRi_SSH_HOST }}
+        SSH_USER: ${{ secrets.SiGiRi_SSH_USER }}
+        SSH_PORT: ${{ secrets.SiGiRi_SSH_PORT }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        rsync -avz -e "ssh -i private_key -p $SSH_PORT" --exclude node_modules ./ $SSH_USER@$SSH_HOST:/home/ubuntu/csv-parser
+        ssh -i private_key -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
+          cd /home/ubuntu/csv-parser
+          npm install --production
+          pm2 restart csv-parser || pm2 start npm --name "csv-parser" -- start
+          exit
+        EOF
+      shell: bash
