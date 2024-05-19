@@ -25,6 +25,10 @@ jobs:
         cache: 'npm'
     - run: npm ci --force
     - run: npm run build --if-present
+
+    - name: Create uploads folder
+      run: mkdir -p dist/uploads
+
     - run: npm test
 
     - name: Add remote host to known_hosts
@@ -45,6 +49,7 @@ jobs:
         ssh -i private_key -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
           cd /home/ubuntu/csv-parser
           npm install --production
+          mkdir -p dist/uploads
           pm2 restart csv-parser || pm2 start npm --name "csv-parser" -- start
           exit
         EOF
