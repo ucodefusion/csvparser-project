@@ -1,7 +1,7 @@
 # Node.js CSV Parser CI/CD
 
 This project is a Node.js application for parsing CSV files, complete with a CI/CD pipeline using GitHub Actions.
-
+CI/CD updates can be check on https://csv-parser.digitools.today
 ## Table of Contents
 
 - About the Project
